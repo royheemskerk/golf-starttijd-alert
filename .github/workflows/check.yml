@@ -24,7 +24,7 @@ jobs:
         run: python3 check.py
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          DATES: ''          # leeg = elke week automatisch de eerstvolgende WEEKDAY
+          DATES: '2026-10-31'  # leeg = elke week automatisch de eerstvolgende WEEKDAY; datum voorbij = pauze
           WEEKDAY: '5'       # 5 = zaterdag
           TIME_FROM: '11:15'
           TIME_TO: '13:45'

@@ -90,6 +90,16 @@ def main():
         print("Alle opgegeven data zijn voorbij.")
         return
 
+    if os.environ.get("TEST_RUN"):
+        global COURSES
+        COURSES = []  # test: alle lussen, zodat er ook echt tijden in de melding staan
+        current = {}
+        for date in dates:
+            current.update(available_slots(date))
+        body = "\n".join(list(current.values())[:15]) or "Er is nu niets vrij."
+        notify(f"TEST starttijd-alert ({', '.join(dates)})", f"Dit is een test. Vrij tussen {TIME_FROM} en {TIME_TO}, alle lussen:\n{body}")
+        return
+
     state = json.load(open(STATE_FILE)) if os.path.exists(STATE_FILE) else {}
     # Nieuwe doeldatum (of eerste run): alleen een overzicht sturen, niet elke tijd als "nieuw".
     first_run = state.get("dates") != dates

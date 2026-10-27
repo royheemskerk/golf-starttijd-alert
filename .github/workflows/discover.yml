@@ -1,0 +1,24 @@
+name: discover
+on:
+  push:
+    paths: ['tools/discover.js', '.github/workflows/discover.yml']
+  workflow_dispatch:
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm i playwright@1.47.2 && npx playwright install --with-deps chromium
+      - run: node tools/discover.js
+        env:
+          TARGET_URL: https://www.delflandgolf.nl/reserveer-starttijd/reserveren-starttijd/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: discover
+          path: |
+            discover.log
+            *.html
+            page.png

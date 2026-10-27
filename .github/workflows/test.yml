@@ -3,12 +3,25 @@ on:
   push:
     paths: ['.github/workflows/test.yml']
   workflow_dispatch:
+    inputs:
+      bericht:
+        description: 'Eigen bericht (leeg = normale testmelding met vrije tijden)'
+        required: false
+        default: ''
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: python3 check.py
+      - name: Eigen bericht
+        if: env.BERICHT != ''
+        run: curl -sS -H "Title: Bericht van de golf-alert" -H "Tags: golf" -d "$BERICHT" "https://ntfy.sh/$NTFY_TOPIC" > /dev/null
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          BERICHT: ${{ inputs.bericht || 'Tim kan niet golfen 🏌️😂' }}
+      - name: Normale testmelding
+        if: github.event_name == 'workflow_dispatch' && inputs.bericht == ''
+        run: python3 check.py
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           TEST_RUN: '1'

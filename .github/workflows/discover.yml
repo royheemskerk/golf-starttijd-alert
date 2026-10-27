@@ -1,7 +1,7 @@
 name: discover
 on:
   push:
-    paths: ['tools/discover.js', '.github/workflows/discover.yml']
+    paths: ['.github/workflows/discover.yml']
   workflow_dispatch:
 permissions:
   contents: write
@@ -9,17 +9,16 @@ jobs:
   discover:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: npm i playwright@1.47.2 && npx playwright install --with-deps chromium
-      - run: node tools/discover.js
-        env:
-          TARGET_URL: https://www.delflandgolf.nl/reserveer-starttijd/reserveren-starttijd/
-      - name: Resultaten naar branch discovery-output
-        if: always()
+      - name: Ophalen
         run: |
-          mkdir -p /tmp/o && cp discover.log *.html page.png /tmp/o/ 2>/dev/null || true
+          mkdir o && cd o
+          curl -sS https://cdn.intogolf.nl/teetime.js -o teetime.js
+          curl -sS "https://delfland.baan.intogolf.nl/api/igg?date=2026-10-31&locNr=29" -o igg-2026-10-31.json
+          curl -sS "https://delfland.baan.intogolf.nl/api/igg?date=2026-10-28&locNr=29" -o igg-2026-10-28.json
+          curl -sS -D headers.txt -o /dev/null "https://delfland.baan.intogolf.nl/api/igg?date=2026-10-31&locNr=29"
+      - name: Resultaten naar branch discovery-output
+        run: |
+          cd o && git init -q && git checkout -qb discovery-output
           git config user.name github-actions && git config user.email actions@github.com
-          git checkout --orphan discovery-output && git rm -rqf . && cp /tmp/o/* . && git add -A
-          git commit -qm "discovery output" && git push -f origin discovery-output
+          git add -A && git commit -qm "discovery output 2"
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" discovery-output

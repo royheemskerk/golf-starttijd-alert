@@ -11,19 +11,18 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+      BERICHT: ${{ github.event_name == 'push' && 'Tim kan niet golfen 🏌️😂' || inputs.bericht }}
     steps:
       - uses: actions/checkout@v4
       - name: Eigen bericht
         if: env.BERICHT != ''
         run: curl -sS -H "Title: Bericht van de golf-alert" -H "Tags: golf" -d "$BERICHT" "https://ntfy.sh/$NTFY_TOPIC" > /dev/null
-        env:
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          BERICHT: ${{ inputs.bericht || 'Tim kan niet golfen 🏌️😂' }}
       - name: Normale testmelding
-        if: github.event_name == 'workflow_dispatch' && inputs.bericht == ''
+        if: env.BERICHT == ''
         run: python3 check.py
         env:
-          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           TEST_RUN: '1'
           DATES: '2026-10-31'
           TIME_FROM: '11:15'

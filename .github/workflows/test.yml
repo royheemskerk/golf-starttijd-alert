@@ -1,3 +1,4 @@
+# Bij een push van dit bestand wordt het push-bericht hieronder verstuurd.
 name: testmelding
 on:
   push:

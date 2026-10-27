@@ -1,0 +1,39 @@
+name: starttijd-check
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+permissions:
+  actions: write
+concurrency:
+  group: starttijd-check
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache/restore@v4
+        with:
+          path: state
+          key: state-${{ github.run_id }}
+          restore-keys: state-
+      - id: check
+        run: python3 check.py
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          DATES: '2026-10-31'
+          TIME_FROM: '11:15'
+          TIME_TO: '13:45'
+          COURSES: 'rood,geel,blauw'
+          MIN_PLAYERS: '1'
+      - uses: actions/cache/save@v4
+        if: success()
+        with:
+          path: state
+          key: state-${{ github.run_id }}
+      - name: Uitzetten als de datum voorbij is
+        if: steps.check.outputs.expired == 'true'
+        run: gh workflow disable starttijd-check -R ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ github.token }}

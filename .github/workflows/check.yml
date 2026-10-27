@@ -6,7 +6,6 @@ on:
   push:
     branches: [main]
 permissions:
-  actions: write
   contents: read
 concurrency:
   group: starttijd-check
@@ -25,7 +24,8 @@ jobs:
         run: python3 check.py
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          DATES: '2026-10-31'
+          DATES: ''          # leeg = elke week automatisch de eerstvolgende WEEKDAY
+          WEEKDAY: '5'       # 5 = zaterdag
           TIME_FROM: '11:15'
           TIME_TO: '13:45'
           COURSES: 'rood,geel,blauw'
@@ -35,8 +35,3 @@ jobs:
         with:
           path: state
           key: state-${{ github.run_id }}
-      - name: Uitzetten als de datum voorbij is
-        if: steps.check.outputs.expired == 'true'
-        run: gh workflow disable starttijd-check -R ${{ github.repository }}
-        env:
-          GH_TOKEN: ${{ github.token }}

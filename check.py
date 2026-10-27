@@ -4,7 +4,7 @@ import json
 import os
 import sys
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 API = "https://delfland.baan.intogolf.nl/api/igg?date={date}&locNr=29"
@@ -12,7 +12,9 @@ BOOK_URL = "https://www.delflandgolf.nl/reserveer-starttijd/reserveren-starttijd
 TZ = ZoneInfo("Europe/Amsterdam")
 STATE_FILE = "state/seen.json"
 
-DATES = [d.strip() for d in os.environ.get("DATES", "2026-10-31").split(",") if d.strip()]
+# Leeg = automatisch de eerstvolgende WEEKDAY (0=maandag ... 5=zaterdag).
+DATES = [d.strip() for d in os.environ.get("DATES", "").split(",") if d.strip()]
+WEEKDAY = int(os.environ.get("WEEKDAY", "5"))
 TIME_FROM = os.environ.get("TIME_FROM", "11:15")
 TIME_TO = os.environ.get("TIME_TO", "13:45")
 COURSES = [c.strip().lower() for c in os.environ.get("COURSES", "rood,geel,blauw").split(",") if c.strip()]
@@ -59,6 +61,15 @@ def available_slots(date):
     return slots
 
 
+def target_dates(now):
+    if DATES:
+        return [d for d in DATES if now.date() <= datetime.strptime(d, "%Y-%m-%d").date()]
+    day = now.date() + timedelta(days=(WEEKDAY - now.weekday()) % 7)
+    if day == now.date() and now.strftime("%H:%M") > TIME_TO:
+        day += timedelta(days=7)
+    return [day.isoformat()]
+
+
 def notify(title, body, priority="high"):
     print(f"[melding] {title}\n{body}")
     if not NTFY_TOPIC:
@@ -74,36 +85,35 @@ def notify(title, body, priority="high"):
 
 def main():
     now = datetime.now(TZ)
-    last_moment = max(datetime.strptime(f"{d} {TIME_TO}", "%Y-%m-%d %H:%M").replace(tzinfo=TZ) for d in DATES)
-    if now > last_moment:
-        print("Alle gezochte data zijn voorbij.")
-        with open(os.environ.get("GITHUB_OUTPUT", os.devnull), "a") as f:
-            f.write("expired=true\n")
+    dates = target_dates(now)
+    if not dates:
+        print("Alle opgegeven data zijn voorbij.")
         return
 
-    first_run = not os.path.exists(STATE_FILE)
-    seen = {} if first_run else json.load(open(STATE_FILE))
+    state = json.load(open(STATE_FILE)) if os.path.exists(STATE_FILE) else {}
+    # Nieuwe doeldatum (of eerste run): alleen een overzicht sturen, niet elke tijd als "nieuw".
+    first_run = state.get("dates") != dates
+    seen = {} if first_run else state.get("slots", {})
 
     current = {}
-    for date in DATES:
-        if now.date() <= datetime.strptime(date, "%Y-%m-%d").date():
-            current.update(available_slots(date))
+    for date in dates:
+        current.update(available_slots(date))
 
     new = {k: v for k, v in current.items() if k not in seen}
     print(f"{now:%Y-%m-%d %H:%M} - {len(current)} vrij in venster, {len(new)} nieuw")
     for v in current.values():
         print("  ", v)
 
-    window = f"{', '.join(DATES)} tussen {TIME_FROM} en {TIME_TO} ({', '.join(COURSES) or 'alle lussen'})"
+    window = f"{', '.join(dates)} tussen {TIME_FROM} en {TIME_TO} ({', '.join(COURSES) or 'alle lussen'})"
     if first_run:
         body = "Nu vrij:\n" + "\n".join(current.values()) if current else "Er is nu nog niets vrij."
-        notify("Starttijd-alert actief", f"Ik let op {window}.\n{body}", priority="default")
+        notify(f"Starttijd-alert: ik let nu op {', '.join(dates)}", f"Ik let op {window}.\n{body}", priority="default")
     elif new:
-        dates = sorted({k.split()[0] for k in new})
-        notify(f"Nieuwe starttijd vrij! ({', '.join(dates)})", "\n".join(new.values()) + "\n\nSnel boeken!", priority="urgent")
+        new_dates = sorted({k.split()[0] for k in new})
+        notify(f"Nieuwe starttijd vrij! ({', '.join(new_dates)})", "\n".join(new.values()) + "\n\nSnel boeken!", priority="urgent")
 
     os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
-    json.dump(current, open(STATE_FILE, "w"), indent=1)
+    json.dump({"dates": dates, "slots": current}, open(STATE_FILE, "w"), indent=1)
 
 
 if __name__ == "__main__":

@@ -18,7 +18,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Eigen bericht
         if: env.BERICHT != ''
-        run: curl -sS -H "Title: Bericht van de golf-alert" -H "Tags: golf" -d "$BERICHT" "https://ntfy.sh/$NTFY_TOPIC" > /dev/null
+        run: |
+          curl -sS -H "Title: Bericht van de golf-alert" -H "Tags: golf" -d "$BERICHT" "https://ntfy.sh/$NTFY_TOPIC" > /dev/null
       - name: Normale testmelding
         if: env.BERICHT == ''
         run: python3 check.py

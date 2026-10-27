@@ -3,6 +3,8 @@ on:
   push:
     paths: ['tools/discover.js', '.github/workflows/discover.yml']
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   discover:
     runs-on: ubuntu-latest
@@ -14,11 +16,10 @@ jobs:
       - run: node tools/discover.js
         env:
           TARGET_URL: https://www.delflandgolf.nl/reserveer-starttijd/reserveren-starttijd/
-      - uses: actions/upload-artifact@v4
+      - name: Resultaten naar branch discovery-output
         if: always()
-        with:
-          name: discover
-          path: |
-            discover.log
-            *.html
-            page.png
+        run: |
+          mkdir -p /tmp/o && cp discover.log *.html page.png /tmp/o/ 2>/dev/null || true
+          git config user.name github-actions && git config user.email actions@github.com
+          git checkout --orphan discovery-output && git rm -rqf . && cp /tmp/o/* . && git add -A
+          git commit -qm "discovery output" && git push -f origin discovery-output

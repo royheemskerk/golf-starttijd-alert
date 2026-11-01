@@ -1,9 +1,10 @@
 name: starttijd-check
 on:
-  # Gepauzeerd. Weer aanzetten: de twee regels hieronder terugzetten (zonder #) en DATES aanpassen.
-  # schedule:
-  #   - cron: '*/5 * * * *'
+  schedule:
+    - cron: '*/5 * * * *'
   workflow_dispatch:
+  push:
+    branches: [main]
 permissions:
   contents: read
 concurrency:
@@ -23,10 +24,10 @@ jobs:
         run: python3 check.py
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          DATES: '2026-10-31'  # leeg = elke week automatisch de eerstvolgende WEEKDAY; datum voorbij = pauze
+          DATES: '2026-11-07'  # leeg = elke week automatisch de eerstvolgende WEEKDAY; datum voorbij = pauze
           WEEKDAY: '5'       # 5 = zaterdag
-          TIME_FROM: '11:15'
-          TIME_TO: '13:45'
+          TIME_FROM: '12:00'
+          TIME_TO: '13:10'
           COURSES: 'rood,geel,blauw'
           MIN_PLAYERS: '1'
       - uses: actions/cache/save@v4

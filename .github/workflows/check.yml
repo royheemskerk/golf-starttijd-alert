@@ -30,6 +30,16 @@ jobs:
           TIME_TO: '13:10'
           COURSES: 'rood,geel,blauw'
           MIN_PLAYERS: '1'
+      - name: Tweede alert (14:00-15:00, rood en geel)
+        run: python3 check.py
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          STATE_FILE: state/seen-middag.json
+          DATES: '2026-11-07'
+          TIME_FROM: '14:00'
+          TIME_TO: '15:00'
+          COURSES: 'rood,geel'
+          MIN_PLAYERS: '1'
       - uses: actions/cache/save@v4
         if: success()
         with:

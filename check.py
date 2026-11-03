@@ -10,7 +10,7 @@ from zoneinfo import ZoneInfo
 API = "https://delfland.baan.intogolf.nl/api/igg?date={date}&locNr=29"
 BOOK_URL = "https://www.delflandgolf.nl/reserveer-starttijd/reserveren-starttijd/"
 TZ = ZoneInfo("Europe/Amsterdam")
-STATE_FILE = "state/seen.json"
+STATE_FILE = os.environ.get("STATE_FILE", "state/seen.json")
 
 # Leeg = automatisch de eerstvolgende WEEKDAY (0=maandag ... 5=zaterdag).
 DATES = [d.strip() for d in os.environ.get("DATES", "").split(",") if d.strip()]

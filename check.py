@@ -101,19 +101,14 @@ def main():
         return
 
     state = json.load(open(STATE_FILE)) if os.path.exists(STATE_FILE) else {}
-    # Nieuwe doeldatum (of eerste run): alleen een overzicht sturen, niet elke tijd als "nieuw".
-    first_run = state.get("dates") != dates
+    window = f"{', '.join(dates)} tussen {TIME_FROM} en {TIME_TO} ({', '.join(COURSES) or 'alle lussen'})"
+    # Nieuwe datum, tijdvak of lussen (of eerste run): een overzicht sturen, niet elke tijd als "nieuw".
+    first_run = state.get("dates") != dates or state.get("window", window) != window
     seen = {} if first_run else state.get("slots", {})
 
     current = {}
     for date in dates:
         current.update(available_slots(date))
-
-    window = f"{', '.join(dates)} tussen {TIME_FROM} en {TIME_TO} ({', '.join(COURSES) or 'alle lussen'})"
-    # Zelfde datum maar ander tijdvak of andere lussen: stil opnieuw beginnen, zonder melding.
-    if not first_run and state.get("window") != window:
-        print("Tijdvak of lussen gewijzigd: huidige vrije tijden stil overgenomen.")
-        seen = current
 
     new = {k: v for k, v in current.items() if k not in seen}
     print(f"{now:%Y-%m-%d %H:%M} - {len(current)} vrij in venster, {len(new)} nieuw")

@@ -3,6 +3,8 @@ en stuurt een pushmelding via ntfy zodra er een tijd bijkomt."""
 import json
 import os
 import sys
+import time
+import traceback
 import urllib.request
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
@@ -20,6 +22,9 @@ TIME_TO = os.environ.get("TIME_TO", "13:45")
 COURSES = [c.strip().lower() for c in os.environ.get("COURSES", "rood,geel,blauw").split(",") if c.strip()]
 MIN_PLAYERS = int(os.environ.get("MIN_PLAYERS", "1"))
 NTFY_TOPIC = os.environ.get("NTFY_TOPIC", "")
+# GitHub start geplande runs vaak maar eens per uur; daarom blijft één run een tijd doorkijken.
+LOOP_MINUTES = int(os.environ.get("LOOP_MINUTES", "0"))
+INTERVAL_SECONDS = int(os.environ.get("INTERVAL_SECONDS", "120"))
 
 
 def minutes(hhmm):
@@ -88,7 +93,7 @@ def main():
     dates = target_dates(now)
     if not dates:
         print("Alle opgegeven data zijn voorbij.")
-        return
+        return False
 
     if os.environ.get("TEST_RUN"):
         global COURSES
@@ -124,7 +129,24 @@ def main():
 
     os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
     json.dump({"dates": dates, "window": window, "slots": current}, open(STATE_FILE, "w"), indent=1)
+    return True
+
+
+def loop():
+    """Herhaalt main() tot LOOP_MINUTES om zijn; een fout (bv. site even onbereikbaar) slaat één ronde over."""
+    deadline = time.time() + LOOP_MINUTES * 60
+    while True:
+        try:
+            if main() is False:
+                return
+        except Exception:
+            traceback.print_exc()
+            if not LOOP_MINUTES:
+                raise
+        if time.time() + INTERVAL_SECONDS > deadline:
+            return
+        time.sleep(INTERVAL_SECONDS)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    loop()

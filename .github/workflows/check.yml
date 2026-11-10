@@ -26,7 +26,7 @@ jobs:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           DATES: '2026-11-14'  # leeg = elke week automatisch de eerstvolgende WEEKDAY; datum voorbij = pauze
           WEEKDAY: '5'       # 5 = zaterdag
-          TIME_FROM: '10:00'
+          TIME_FROM: '09:30'
           TIME_TO: '15:15'
           COURSES: 'rood,geel,blauw'
           MIN_PLAYERS: '1'

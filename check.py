@@ -109,12 +109,17 @@ def main():
     for date in dates:
         current.update(available_slots(date))
 
+    window = f"{', '.join(dates)} tussen {TIME_FROM} en {TIME_TO} ({', '.join(COURSES) or 'alle lussen'})"
+    # Zelfde datum maar ander tijdvak of andere lussen: stil opnieuw beginnen, zonder melding.
+    if not first_run and state.get("window") != window:
+        print("Tijdvak of lussen gewijzigd: huidige vrije tijden stil overgenomen.")
+        seen = current
+
     new = {k: v for k, v in current.items() if k not in seen}
     print(f"{now:%Y-%m-%d %H:%M} - {len(current)} vrij in venster, {len(new)} nieuw")
     for v in current.values():
         print("  ", v)
 
-    window = f"{', '.join(dates)} tussen {TIME_FROM} en {TIME_TO} ({', '.join(COURSES) or 'alle lussen'})"
     if first_run:
         body = "Nu vrij:\n" + "\n".join(current.values()) if current else "Er is nu nog niets vrij."
         notify(f"Starttijd-alert: ik let nu op {', '.join(dates)}", f"Ik let op {window}.\n{body}", priority="default")
@@ -123,7 +128,7 @@ def main():
         notify(f"Nieuwe starttijd vrij! ({', '.join(new_dates)})", "\n".join(new.values()) + "\n\nSnel boeken!", priority="urgent")
 
     os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
-    json.dump({"dates": dates, "slots": current}, open(STATE_FILE, "w"), indent=1)
+    json.dump({"dates": dates, "window": window, "slots": current}, open(STATE_FILE, "w"), indent=1)
 
 
 if __name__ == "__main__":

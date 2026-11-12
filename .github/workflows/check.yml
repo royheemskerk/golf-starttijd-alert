@@ -21,7 +21,12 @@ jobs:
           key: state-${{ github.run_id }}
           restore-keys: state-
       - id: check
-        run: python3 check.py
+        # Elk alarm draait tegelijk als eigen proces, met een eigen geheugen (STATE_FILE).
+        # De instellingen hieronder (env) zijn voor alarm 1; extra alarmen overschrijven alleen wat anders is.
+        run: |
+          python3 check.py &
+          DATES=2026-11-15 TIME_FROM=12:00 TIME_TO=15:00 STATE_FILE=state/seen-zondag.json python3 check.py &
+          wait
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           DATES: '2026-11-14'  # leeg = elke week automatisch de eerstvolgende WEEKDAY; datum voorbij = pauze

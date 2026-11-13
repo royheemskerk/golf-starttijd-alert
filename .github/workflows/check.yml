@@ -25,14 +25,14 @@ jobs:
         # De instellingen hieronder (env) zijn voor alarm 1; extra alarmen overschrijven alleen wat anders is.
         run: |
           python3 check.py &
-          DATES=2026-11-15 TIME_FROM=12:00 TIME_TO=15:00 STATE_FILE=state/seen-zondag.json python3 check.py &
           wait
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          DATES: '2026-11-14'  # leeg = elke week automatisch de eerstvolgende WEEKDAY; datum voorbij = pauze
+          STATE_FILE: state/seen-zondag.json
+          DATES: '2026-11-15'  # leeg = elke week automatisch de eerstvolgende WEEKDAY; datum voorbij = pauze
           WEEKDAY: '5'       # 5 = zaterdag
-          TIME_FROM: '09:30'
-          TIME_TO: '15:15'
+          TIME_FROM: '12:00'
+          TIME_TO: '15:00'
           COURSES: 'rood,geel,blauw'
           MIN_PLAYERS: '1'
           LOOP_MINUTES: '75'     # één run kijkt ruim een uur door ...

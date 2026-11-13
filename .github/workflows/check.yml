@@ -35,7 +35,6 @@ jobs:
           TIME_TO: '15:15'
           COURSES: 'rood,geel,blauw'
           MIN_PLAYERS: '1'
-          QUIET_CHANGE: '1'      # eenmalig: wijziging van tijdvak zonder overzichtsmelding
           LOOP_MINUTES: '75'     # één run kijkt ruim een uur door ...
           INTERVAL_SECONDS: '120'  # ... elke 2 minuten
       - uses: actions/cache/save@v4

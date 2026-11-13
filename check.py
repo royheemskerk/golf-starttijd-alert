@@ -110,11 +110,18 @@ def main():
     # Nieuwe datum, tijdvak of lussen (of eerste run): een overzicht sturen, niet elke tijd als "nieuw".
     first_run = state.get("dates") != dates or state.get("window", window) != window
     seen = {} if first_run else state.get("slots", {})
+    quiet = False
+    if first_run and state.get("dates") == dates and os.environ.get("QUIET_CHANGE"):
+        # Eenmalig: tijdvak/lussen aangepast zonder overzichtsmelding.
+        first_run, quiet = False, True
 
     current = {}
     for date in dates:
         current.update(available_slots(date))
 
+    if quiet:
+        print("Tijdvak aangepast zonder melding; huidige vrije tijden overgenomen.")
+        seen = current
     new = {k: v for k, v in current.items() if k not in seen}
     print(f"{now:%Y-%m-%d %H:%M} - {len(current)} vrij in venster, {len(new)} nieuw")
     for v in current.values():

@@ -1,9 +1,10 @@
 name: starttijd-check
 on:
-  # Gepauzeerd. Weer aanzetten: de twee regels hieronder terugzetten (zonder #) en DATES aanpassen.
-  # schedule:
-  #   - cron: '*/5 * * * *'
+  schedule:
+    - cron: '*/5 * * * *'
   workflow_dispatch:
+  push:
+    branches: [main]
 permissions:
   contents: read
 concurrency:
@@ -27,11 +28,10 @@ jobs:
           wait
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-          STATE_FILE: state/seen-zondag.json
-          DATES: '2026-11-15'  # leeg = elke week automatisch de eerstvolgende WEEKDAY; datum voorbij = pauze
+          DATES: '2026-11-21'  # leeg = elke week automatisch de eerstvolgende WEEKDAY; datum voorbij = pauze
           WEEKDAY: '5'       # 5 = zaterdag
-          TIME_FROM: '12:00'
-          TIME_TO: '15:15'
+          TIME_FROM: '09:00'
+          TIME_TO: '11:00'
           COURSES: 'rood,geel,blauw'
           MIN_PLAYERS: '1'
           LOOP_MINUTES: '75'     # één run kijkt ruim een uur door ...

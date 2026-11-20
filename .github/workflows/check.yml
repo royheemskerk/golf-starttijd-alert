@@ -1,10 +1,9 @@
 name: starttijd-check
 on:
-  schedule:
-    - cron: '*/5 * * * *'
+  # Gepauzeerd. Weer aanzetten: de twee regels hieronder terugzetten (zonder #) en DATES aanpassen.
+  # schedule:
+  #   - cron: '*/5 * * * *'
   workflow_dispatch:
-  push:
-    branches: [main]
 permissions:
   contents: read
 concurrency:

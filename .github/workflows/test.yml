@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
-      BERICHT: ${{ github.event_name == 'push' && 'Tim kan niet golfen 🏌️😂' || inputs.bericht }}
+      BERICHT: ${{ github.event_name == 'push' && 'Thom, even aan je clubhead speed werken! 🏌️💨' || inputs.bericht }}
     steps:
       - uses: actions/checkout@v4
       - name: Eigen bericht

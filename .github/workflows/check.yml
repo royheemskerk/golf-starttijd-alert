@@ -25,6 +25,7 @@ jobs:
         # De instellingen hieronder (env) zijn voor alarm 1; extra alarmen overschrijven alleen wat anders is.
         run: |
           python3 check.py &
+          TIME_FROM=08:15 TIME_TO=08:40 STATE_FILE=state/seen-ochtend.json python3 check.py &
           wait
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}

@@ -26,6 +26,8 @@ jobs:
           curl -sS https://ntfy.sh/v1/config -o /tmp/o/ntfy-config.json || true
           echo "topic-lengte: ${#NTFY_TOPIC}" > /tmp/o/topic.txt
           date -u > /tmp/o/when.txt
+          # Alleen lezen: berichten van de afgelopen 48 uur (stuurt niets).
+          curl -sS "https://ntfy.sh/$NTFY_TOPIC/json?poll=1&since=48h" | jq -c '{time: (.time|todate), title, message}' > /tmp/o/ntfy-history.txt || true
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
       - name: Naar branch diag-output

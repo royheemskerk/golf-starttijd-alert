@@ -7,12 +7,13 @@ on:
     branches: [main]
 permissions:
   contents: read
+  actions: write   # om zelf de volgende run te starten
 concurrency:
   group: starttijd-check
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 140
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache/restore@v4
@@ -35,10 +36,17 @@ jobs:
           TIME_TO: '12:40'
           COURSES: 'rood,geel,blauw'
           MIN_PLAYERS: '1'
-          LOOP_MINUTES: '75'     # één run kijkt ruim een uur door ...
+          LOOP_MINUTES: '120'    # één run kijkt 2 uur door ...
           INTERVAL_SECONDS: '120'  # ... elke 2 minuten
       - uses: actions/cache/save@v4
         if: always()
         with:
           path: state
           key: state-${{ github.run_id }}
+      # GitHub start geplande runs soms urenlang niet. Daarom start elke run zelf de volgende,
+      # zolang er nog een datum in de toekomst is. Stopt bij annuleren of als alle data voorbij zijn.
+      - name: Volgende run starten
+        if: success() && steps.check.outputs.actief == 'true'
+        run: gh workflow run check.yml -R ${{ github.repository }} --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}

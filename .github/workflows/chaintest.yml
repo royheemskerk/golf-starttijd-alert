@@ -1,0 +1,16 @@
+name: chaintest
+on:
+  push:
+    paths: ['.github/workflows/chaintest.yml']
+  workflow_dispatch:
+permissions:
+  actions: write
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    steps:
+      - if: github.event_name == 'push'
+        run: gh workflow run chaintest.yml -R ${{ github.repository }} --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}
+      - run: echo ok

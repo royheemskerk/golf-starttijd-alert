@@ -94,6 +94,8 @@ def main():
     if not dates:
         print("Alle opgegeven data zijn voorbij.")
         return False
+    with open(os.environ.get("GITHUB_OUTPUT", os.devnull), "a") as f:
+        f.write("actief=true\n")
 
     if os.environ.get("TEST_RUN"):
         global COURSES

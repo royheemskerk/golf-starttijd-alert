@@ -1,0 +1,13 @@
+{
+ "dates": [
+  "2026-11-15"
+ ],
+ "window": "2026-11-15 tussen 12:00 en 15:15 (rood, geel, blauw)",
+ "slots": {
+  "2026-11-15 13:15 rood": "13:15 lus rood, 9 holes, 3 plek(ken) vrij",
+  "2026-11-15 14:11 geel": "14:11 lus geel, 9 holes, 3 plek(ken) vrij",
+  "2026-11-15 14:32 geel": "14:32 lus geel, 9 holes, 3 plek(ken) vrij",
+  "2026-11-15 15:07 geel": "15:07 lus geel, 9 holes, 3 plek(ken) vrij",
+  "2026-11-15 12:47 blauw": "12:47 lus blauw, 9 holes, 3 plek(ken) vrij"
+ }
+}

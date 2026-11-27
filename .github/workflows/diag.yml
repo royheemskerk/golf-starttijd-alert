@@ -1,0 +1,36 @@
+# Diagnose zonder meldingen: haalt API-data, opgeslagen alarmgeheugen en ntfy-limieten op.
+name: diagnose
+on:
+  push:
+    paths: ['.github/workflows/diag.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache/restore@v4
+        with:
+          path: state
+          key: diag-${{ github.run_id }}
+          restore-keys: state-
+      - name: Gegevens verzamelen
+        run: |
+          mkdir -p /tmp/o
+          cp -r state /tmp/o/ 2>/dev/null || echo "geen state" > /tmp/o/no-state.txt
+          curl -sS "https://delfland.baan.intogolf.nl/api/igg?date=2026-11-28&locNr=29" -o /tmp/o/igg-2026-11-28.json -w '%{http_code}\n' > /tmp/o/igg-status.txt
+          curl -sS "https://delfland.baan.intogolf.nl/api/igg?date=2026-11-28&locNr=30" -o /tmp/o/igg-loc30-2026-11-28.json
+          curl -sS https://ntfy.sh/v1/account -o /tmp/o/ntfy-account.json -w '%{http_code}\n' > /tmp/o/ntfy-status.txt
+          curl -sS https://ntfy.sh/v1/config -o /tmp/o/ntfy-config.json || true
+          echo "topic-lengte: ${#NTFY_TOPIC}" > /tmp/o/topic.txt
+          date -u > /tmp/o/when.txt
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+      - name: Naar branch diag-output
+        run: |
+          cd /tmp/o && git init -q && git checkout -qb diag-output
+          git config user.name github-actions && git config user.email actions@github.com
+          git add -A && git commit -qm diag
+          git push -qf "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}" diag-output
